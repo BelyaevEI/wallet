@@ -4,9 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/BelyaevEI/wallet/internal/app"
@@ -14,15 +11,13 @@ import (
 
 func main() {
 
+	// Create a new application
 	app, err := app.NewApp()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Creating channel for graceful shutdown
-	sigint := make(chan os.Signal, 1)
-	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
+	// Start server for proccesiing request
 	go func() {
 		log.Println("Server is start")
 		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -30,15 +25,19 @@ func main() {
 		}
 	}()
 
+	// Start beaver for transfer funds
+	go func() {
+		if err := app.Beaver.RunBeaver(); err != nil {
+			log.Fatalf("beaver work not corrected: %v", err)
+		}
+	}()
+
 	// Given signal for shutdown
-	sig := <-sigint
+	sig := <-app.Sigint
 	log.Printf("Received signal: %v", sig)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	// Close all connection
-	app.Service.Shutdown()
 
 	// Shutdown server
 	if err := app.Server.Shutdown(ctx); err != nil {

@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	DSN  string `mapstructure:"DSN"`  // DSN for postgreSQL
-	Host string `mapstructure:"Host"` // Server host
-	Port string `mapstructure:"Port"` // Server port
+	DSN    string `mapstructure:"DSN"`    // DSN for postgreSQL
+	Host   string `mapstructure:"Host"`   // Server host
+	Port   string `mapstructure:"Port"`   // Server port
+	Rabbit string `mapstructure:"Rabbit"` // Rabbit
 }
 
 // Reading config file for setting application

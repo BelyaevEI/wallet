@@ -3,7 +3,11 @@ package app
 import (
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/BelyaevEI/wallet/internal/beaver"
 	"github.com/BelyaevEI/wallet/internal/config"
 	"github.com/BelyaevEI/wallet/internal/logger"
 	"github.com/BelyaevEI/wallet/internal/server/route"
@@ -14,7 +18,8 @@ import (
 type application struct {
 	Server  *http.Server     // the server that processes requests for funds transfer
 	Service service.Servicer // service for processing request
-	// Beaver
+	Sigint  chan os.Signal   // channel for given signal for graceful shutdown
+	Beaver  beaver.Beaverer  // the entity that performs the work of transferring funds
 }
 
 func NewApp() (application, error) {
@@ -26,7 +31,7 @@ func NewApp() (application, error) {
 	}
 
 	// Reading config file
-	cfg, err := config.LoadConfig("../../")
+	cfg, err := config.LoadConfig("../")
 	if err != nil {
 		log.Log.Error("read config file is fail: ", err)
 		return application{}, err
@@ -50,5 +55,15 @@ func NewApp() (application, error) {
 		Handler: route,
 	}
 
-	return application{Server: server}, nil
+	// Init beaver
+	beaver, err := beaver.NewBeaver(log, cfg)
+	if err != nil {
+		return application{}, err
+	}
+
+	// Creating channel for graceful shutdown
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	return application{Server: server, Sigint: sigint, Beaver: beaver}, nil
 }

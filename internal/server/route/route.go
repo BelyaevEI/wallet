@@ -1,3 +1,4 @@
+// this package compares url requests and their handlers
 package route
 
 import (
@@ -14,6 +15,7 @@ func NewRouter(log *logger.Logger, cfg config.Config, service service.Servicer) 
 
 	// Handlers
 	route.Get("/api/v1/{walletid}", service.GetBalance)
+	route.Post("/api/v1/{walletid}", service.TransferFunds)
 
 	return route, nil
 }

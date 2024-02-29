@@ -1,3 +1,5 @@
+// The service layer is designed to handle
+// incoming requests to the server and business logic
 package service
 
 import (
@@ -8,12 +10,15 @@ import (
 	"github.com/BelyaevEI/wallet/internal/server/repository"
 )
 
+// Implementation check
+var _ Servicer = &Service{}
+
 type Servicer interface {
 	Shutdown()
 	GetBalance(writer http.ResponseWriter, request *http.Request)
+	TransferFunds(writer http.ResponseWriter, request *http.Request)
 }
 
-// Service layer
 type Service struct {
 	log        *logger.Logger
 	repository repository.Repositorer
