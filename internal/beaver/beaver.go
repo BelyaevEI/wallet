@@ -87,7 +87,6 @@ func (beaver Beaver) RunBeaver() error {
 			}
 		}(message)
 	}
-
 	return nil
 }
 
