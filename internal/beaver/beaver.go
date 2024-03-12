@@ -79,10 +79,13 @@ func (beaver Beaver) RunBeaver() error {
 	}
 
 	for message := range messages {
-		err := beaver.transferFunds(message.Body)
-		if err != nil {
-			beaver.log.Log.Info("transfer funds is failed: ", err)
-		}
+
+		go func(mes amqp.Delivery) {
+			err := beaver.transferFunds(mes.Body)
+			if err != nil {
+				beaver.log.Log.Info("transfer funds is failed: ", err)
+			}
+		}(message)
 	}
 
 	return nil
